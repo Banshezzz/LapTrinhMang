@@ -44,26 +44,58 @@ public class DoAn_LTM {
                 host = packet.getAddress();
                 port = packet.getPort();//lay thong tin port cua Client
                 chuoi = new String(packet.getData()).trim();//lay du lieu cua may Client
+                //tach chuoi kiem tra co la gi
+                String[] s_array = chuoi.split("@");//chuyen item kieu string sang mang kieu string
+                int check = Integer.parseInt(s_array[0]);
                 
-                //kiem tra xem du lieu tu Client phai la khoa hay khong
-                if ( Check(chuoi)== true) {
-                    chuoi = chuoi + Khoa();//trao doi khoa vơi server
-                    key = Integer.parseInt(chuoi);
-                    System.out.println("Khoa sau khi trao doi: "+ chuoi);
-                    if (!chuoi.equals("")) {
-                        send(chuoi, host, port);
-                        
+                //kiem tra neu co tra ve la 1 thì trao doi khoa
+                if ( check == 1) {
+                    String khoa = s_array[1] + Khoa();//trao doi khoa vơi server
+                    //chuyen khoa kieu string sang int de kiem tra 
+                    key = Integer.parseInt(khoa);
+                    System.out.println("Khoa sau khi trao doi: "+ key);
+                    //neu khoa khác rỗng thi gửi lại client
+                    if (!khoa.equals("")) {
+                        send(khoa, host, port);
+                        key = 0;//reset gia tri cua bien key
                     }
-                } else { 
-                    Giaima(chuoi); //giai ma ban ma tu client gui len
-                    DemKyTu(Giaima(chuoi));
-                    System.out.println("Van ban sau khi giai ma: "+ Giaima(chuoi));
+                }  
+                //kiem tra neu co tra ve 2 thi giai ma ban ma, dem so lan xuat hien cua tung ky tu
+                if (check == 2) {
+                    key = Integer.parseInt(s_array[1]);//chuyen gia tri key trong mang thanh int
+                    System.out.println("Khoa co 2: "+ key);
+                    String data = s_array[2];//lay gia tri trong mang
+                    //giai ma ban ma tu client gui len
+                    //dem so lan xuat hien cua tung ky tu
+                    DemKyTu(Giaima(data));
+                    //xuat ra man hinh kiem tra ket qua
+                    System.out.println("Van ban sau khi giai ma: "+ Giaima(data));
+                    //kiem tra bien giu thong tin so lan xuat hien cua cac chu cai, meu khac rong gui laij client
                     if (!kytu.equals("")) {
                         send(kytu, host, port);
-                        kytu = "";//reset lai biến kytu ve null
-                        key = 0;//reset lai biến key ve 0
+                        kytu = "";//reset lai bien kytu
                     }
                 }
+                //kiem tra neu co bang 3 thi giai ma ban ma va tim so lan xuat hien cua ky tu gui len
+                if (check == 3) {
+                    key = Integer.parseInt(s_array[1]);//chuyen gia tri key trong mang thanh int
+                    System.out.println("Khoa co 3: "+ key);
+                    String kt = s_array[2];//ky tu nhan tu client
+                    kt = kt.toUpperCase();
+                    System.out.println("Ky tu: "+ kt);
+                    String data = s_array[3];//lay gia tri trong mang
+                    //giai ma ban ma tu client gui len
+                    //dem so lan xuat hien cua tung ky tu
+                    DemKT(Giaima(data),kt);
+                    //xuat ra man hinh kiem tra ket qua
+                    System.out.println("Van ban sau khi giai ma: "+ Giaima(data));
+                    //kiem tra bien giu thong tin so lan xuat hien cua cac chu cai, meu khac rong gui laij client
+                    if (!kytu.equals("")) {
+                        send(kytu, host, port);
+                        kytu = "";//reset lai bien kytu
+                    }
+                }
+                
                 
             }
         } catch (Exception e) {
@@ -85,7 +117,7 @@ public class DoAn_LTM {
         byte[] buffer = new byte[65507]; //khai bao mang byte nhan
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         socket.receive(packet);
-        
+
         return packet;
     }
      //ham sinh mot so ngau nhien de trao doi khoa
@@ -119,19 +151,7 @@ public class DoAn_LTM {
         //tra ve chuoi sau khi ma hoa
         return mahoa(c,-key);
     }
-     
-     //ham kiem tra xem co phai so kieu so nguyen khong khong
-    private boolean Check(String key){
-        boolean isCheck = true; //khoi tao co
-        Pattern p = Pattern.compile("[0-9]");
-        Matcher m = p.matcher(key);
-        if (!m.find()) {
-            isCheck = false;
-        }
-        
-        return isCheck;
-    }
-    
+      
     //ham dem so lan xuat hien cua cac ky tu trong mang
     static void DemKyTu(String str)
     {
@@ -157,6 +177,23 @@ public class DoAn_LTM {
                  System.out.println(MangKT[i]+" "+ d);//xuat ra man hinh kiem tra
             } 
         }
+    }
+    //ham diem ký tu do client gui len
+    static void DemKT(String str, String kt){
+        char chu = kt.charAt(0);
+         System.out.println("Ky tu: "+chu);//xuat ra man hinh kiem tra
+        int dem =0;//khoi tao bien dem
+        str = str.replaceAll(" ", "");//xoa tat ca khoang trang trong mang
+        char[] charArray = str.toCharArray();//chuyen chuoi thanh mang char
+        int lenchuoi = charArray.length;//do dai mang du liu tu client
+        //vong lap dem ky tu
+        for (int i = 0; i < lenchuoi; i++) {
+            if (chu == charArray[i]) {
+                dem++;
+            }
+        }
+        kytu =kytu + dem;//tra ve so lan dem duoc
+        
     }
     /**
      * @param args the command line arguments
