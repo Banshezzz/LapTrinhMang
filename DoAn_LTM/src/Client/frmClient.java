@@ -28,10 +28,10 @@ import javax.swing.JOptionPane;
  * @author hongs
  */
 public class frmClient extends javax.swing.JFrame {
-    
+
     //khoi tao cac bien can dung
     private DatagramSocket socket;
-    private InetAddress ipserver ;//luu dia chi may server
+    private InetAddress ipserver;//luu dia chi may server
     private int port = 1234;//su dung port 1234 de giao tiep voi server
     private String key = ""; //khoi tao key de luu tru khoa
 
@@ -41,37 +41,43 @@ public class frmClient extends javax.swing.JFrame {
     public frmClient() {
         initComponents();
     }
+
     //ham lay ip cua ten mien
-    private InetAddress IP(){
+    private InetAddress IP() {
         try {
             //lay ten domain ran vao InetAddress
             String domain = this.txt_DiaChi.getText();
             ipserver = InetAddress.getByName(domain);
-            
+
         } catch (UnknownHostException e) {
         }
         //tra ve dia chi ip cua domain
-        if (ipserver == null ) {
+        if (ipserver == null) {
             JOptionPane.showMessageDialog(this, "Vui lòng kiểm tra lại địa chỉ !");
             return null;
         }
         return ipserver;
     }
-    
+
     //ham ma hoa voi thuat toan Caeser
-    char mahoakt(char c,int k){
-        if(!Character.isLetter(c)) return c;
+    char mahoakt(char c, int k) {
+        if (!Character.isLetter(c)) {
+            return c;
+        }
         return (char) ((((Character.toUpperCase(c) - 'A') + k) % 26 + 26) % 26 + 'A');
     }
-    private String mahoa(String br,int k){
-        String kq="";
-        int n=br.length();
-        for(int i=0;i<n;i++)
-            kq+=mahoakt(br.charAt(i),k);
+
+    private String mahoa(String br, int k) {
+        String kq = "";
+        int n = br.length();
+        for (int i = 0; i < n; i++) {
+            kq += mahoakt(br.charAt(i), k);
+        }
         return kq;
     }
+
     //ham kiem tra nguoi dung co nhap vao so nguyen
-    private boolean Khoa(){
+    private boolean Khoa() {
         //khoi tao bien boolean
         boolean isCheck = true;
         //kiem tra khoa phai so nguyen khong
@@ -81,15 +87,18 @@ public class frmClient extends javax.swing.JFrame {
         String paString = "[a-zA-Z]";
         Pattern p1 = Pattern.compile(paString);
         Matcher m1 = p1.matcher(txt_Khoa.getText().trim());
+        //kiem tra van ban co ton tai chu so
+        Pattern p2 = Pattern.compile("[0-9]");
+        Matcher m2 = p2.matcher(txt_VanBan.getText());
         //khoi tao bien dia chi
         String diachi = this.txt_DiaChi.getText();
         //kiem tra khoa co trong hay khong
         if (txt_Khoa.getText().trim().isEmpty()) {
-             JOptionPane.showMessageDialog(this, "Vui lòng không để trống khóa !");
-              isCheck = false;
+            JOptionPane.showMessageDialog(this, "Vui lòng không để trống khóa !");
+            isCheck = false;
         } else {
             //kiem tra khoa co ton tai ky tu
-            if (m1.find()== true){
+            if (m1.find() == true) {
                 JOptionPane.showMessageDialog(this, "Vui lòng nhập khóa không có ký tự !");
                 isCheck = false;
             } else {
@@ -100,47 +109,56 @@ public class frmClient extends javax.swing.JFrame {
                 } else {
                     //kiem tra van ban co trong hay khong
                     if (txt_VanBan.getText().trim().isEmpty()) {
-                         JOptionPane.showMessageDialog(this, "Vui lòng không để trống văn bản !");
-                          isCheck = false;
-                    } else{
+                        JOptionPane.showMessageDialog(this, "Vui lòng không để trống văn bản !");
+                        isCheck = false;
+                    } else if (m2.find() == true) {
+                        JOptionPane.showMessageDialog(this, "Văn bản không bao gồn chữ số");
+                        isCheck = false;
+                    } else {
                         if (diachi.isEmpty()) {
                             JOptionPane.showMessageDialog(this, "Vui lòng không để trống tên địa chỉ!");
                             isCheck = false;
                         } else if (!diachi.contains(".")) {
                             JOptionPane.showMessageDialog(this, "Vui lòng kiểm tra lại địa chỉ !");
                             isCheck = false;
-                        } 
+                        }
                     }
                 }
             }
         }
-        
+
         return isCheck;
     }
+
     //ham kiem tra textfiled ky tu co de trong khong 
-    private boolean Check(){ 
+    private boolean Check(String Kytu) {
         boolean isCheck = true;
         String kytu = this.txt_Kytu.getText().trim();
+        Pattern p = Pattern.compile("[0-9]");
+        Matcher m = p.matcher(kytu);
         if (kytu.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Vui lòng không để trống ký tự !");
             isCheck = false;
-        } 
+        } else if (m.find() == true) {
+            JOptionPane.showMessageDialog(this, "Vui lòng không điền chữ số !");
+            isCheck = false;
+        }
         return isCheck;
     }
-    
+
     //ham ma hoa van ban truoc khi gui len Server
-    private String Mahoa(){
+    private String Mahoa() {
         //chuyen doi khoa kieu string sang int
-        int k=Integer.valueOf(key.trim());
-        String br=this.txt_VanBan.getText();
+        int k = Integer.valueOf(key.trim());
+        String br = this.txt_VanBan.getText();
         //tra ve chuoi sau khi ma hoa
-  
-        return mahoa(br,k);
+
+        return mahoa(br, k);
     }
-    
+
     //ham gui du lieu len server
-    private void SendData(String chuoi){ 
-        byte []sendData;
+    private void SendData(String chuoi) {
+        byte[] sendData;
         InetAddress ip = IP();
         try {
             socket = new DatagramSocket();
@@ -148,19 +166,19 @@ public class frmClient extends javax.swing.JFrame {
             //Data gram packet dung de luu du lieu
             DatagramPacket seDatagramPacket = new DatagramPacket(sendData, sendData.length, ip, port);
             socket.send(seDatagramPacket);//gui du lieu di
-               
+
         } catch (IOException e) {
         }
     }
-    
+
     //ham nhan du lieu tu Server
-    private DatagramPacket ReceviceData() throws IOException{ 
+    private DatagramPacket ReceviceData() throws IOException {
         //Nhan chuoi ket qua tu server
         byte[] buffer = new byte[65507];//do dai toi da cua goi tin
         DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length);
         socket.receive(receivePacket);//nhan chuoi tra ve
         socket.close();
-               
+
         return receivePacket;
     }
 
@@ -291,21 +309,21 @@ public class frmClient extends javax.swing.JFrame {
         //keim tra xem nguoi dung nhap vao phai so khong
         if (Khoa() == true) {
             //gui chuoi len server kem theo co
-            String chuoi = "1"+"@"+this.txt_Khoa.getText().trim();
+            String chuoi = "1" + "@" + this.txt_Khoa.getText().trim();
             SendData(chuoi);//gui du lieu len server
-            
+
             //nhan du lieu tu server
             DatagramPacket packet;
             try {
                 packet = ReceviceData(); //nhan khoa tu Client truyen len
                 chuoi = new String(packet.getData()).trim();//lay du lieu cua may Client
-                
-                if (chuoi != null) {     
+
+                if (chuoi != null) {
                     System.out.println("Khóa sau khi trao đổi là: " + chuoi);
                     key = chuoi; //ran khoa moi cho bien key
                 } else {
                     JOptionPane.showMessageDialog(this, "Server không phản hồi !!!");
-                } 
+                }
             } catch (IOException ex) {
                 Logger.getLogger(frmClient.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -313,44 +331,49 @@ public class frmClient extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_DoiKhoaActionPerformed
 
     private void btn_GuiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_GuiActionPerformed
-        //kieu tra xem du lieu tra ve co rong khong
-        try {
-            if (Mahoa() != null) {
-                DefaultListModel dmModel = new DefaultListModel();//khoi tao danh sach
-                String data ="2"+"@"+key+"@"+ Mahoa();//gui du lieu len server gom co, khoa, noi dung 
-                SendData(data);//gui ban ma len server
+        if (key != "") {
+            //kieu tra xem du lieu tra ve co rong khong
+            try {
+                if (Mahoa() != null) {
+                    DefaultListModel dmModel = new DefaultListModel();//khoi tao danh sach
+                    String data = "2" + "@" + key + "@" + Mahoa();//gui du lieu len server gom co, khoa, noi dung 
+                    SendData(data);//gui ban ma len server
 
-                //nhan du lieu gui ve tu serevr
-                DatagramPacket packet = ReceviceData(); //nhan khoa tu Client truyen len
-                String chuoi = new String(packet.getData()).trim();//lay du lieu cua may Client
-                System.out.println("Chuỗi nhân về từ Server: " + chuoi);
-                String[] s_array = chuoi.split("@");//chuyen chuoi string thanh mang kieu string
-                //chạy vòng lặp tách số lần điếm của mỗi ký tự ra khỏi mảng
-                for (int i = 0; i < s_array.length; i++) {
+                    //nhan du lieu gui ve tu serevr
+                    DatagramPacket packet = ReceviceData(); //nhan khoa tu Client truyen len
+                    String chuoi = new String(packet.getData()).trim();//lay du lieu cua may Client
+                    System.out.println("Chuỗi nhân về từ Server: " + chuoi);
+                    String[] s_array = chuoi.split("@");//chuyen chuoi string thanh mang kieu string
+                    //chạy vòng lặp tách số lần điếm của mỗi ký tự ra khỏi mảng
+                    for (int i = 0; i < s_array.length; i++) {
 
-                    String kytu =  s_array[i];//rán từng item trong danh sach cho chuoi kytu
-                    System.out.println("Mỗi item trong mảng: " + kytu); // xuất mỗi item ra man hình
-                    String[] item = kytu.split("-");//chuyen item kieu string sang mang kieu string
-                    String thongtin = ""; //luu thong tin cua tung item
-                    for (int j = 0; j < item.length; j++) {
-                        //kiem tra xem item trong mang phai ky ty khong
-                        Pattern p = Pattern.compile("[A-Z]");
-                        Matcher m = p.matcher(item[j]);
-                        //kiem tra xem item trong mang phai so khong
-                        Pattern p1 = Pattern.compile("[0-9]");
-                        Matcher m1 = p1.matcher(item[j]);
-                        if (m.find()) {
-                            thongtin = "Số lần xuất hiện của ký tự " + item[j];
-                        } else if (m1.find()) {
-                            thongtin = thongtin + " là :" +item[j];
+                        String kytu = s_array[i];//rán từng item trong danh sach cho chuoi kytu
+                        System.out.println("Mỗi item trong mảng: " + kytu); // xuất mỗi item ra man hình
+                        String[] item = kytu.split("-");//chuyen item kieu string sang mang kieu string
+                        String thongtin = ""; //luu thong tin cua tung item
+                        for (int j = 0; j < item.length; j++) {
+                            //kiem tra xem item trong mang phai ky ty khong
+                            Pattern p = Pattern.compile("[A-Z]");
+                            Matcher m = p.matcher(item[j]);
+                            //kiem tra xem item trong mang phai so khong
+                            Pattern p1 = Pattern.compile("[0-9]");
+                            Matcher m1 = p1.matcher(item[j]);
+                            if (m.find()) {
+                                thongtin = "Số lần xuất hiện của ký tự " + item[j];
+                            } else if (m1.find()) {
+                                thongtin = thongtin + " là :" + item[j];
+                            }
                         }
+                        dmModel.addElement(thongtin);//them du lieu vao danh sach
                     }
-                    dmModel.addElement(thongtin);//them du lieu vao danh sach
+                    this.listView.setModel(dmModel);//hien thi danh sach len giao dien
+                    System.out.println("Van ban sau khi giai ma: " + chuoi);
                 }
-                this.listView.setModel(dmModel);//hien thi danh sach len giao dien
-                System.out.println("Van ban sau khi giai ma: " + chuoi);
-                }
-        } catch (IOException e) {
+            } catch (IOException e) {
+                JOptionPane.showConfirmDialog(null, "Chua nhận được khóa");
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Cần phải trao đồi khóa trước khi gửi!");
         }
     }//GEN-LAST:event_btn_GuiActionPerformed
 
@@ -358,7 +381,7 @@ public class frmClient extends javax.swing.JFrame {
         //thiet lap hien thi hop thoai chon duong dan
         this.File.setVisible(true);
         //chon hop thoai hien thi len
-        if(this.File.showOpenDialog(this) == JFileChooser.APPROVE_OPTION){
+        if (this.File.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             //neu nut open duoc chon
             try {
                 BufferedReader br = null;
@@ -367,20 +390,20 @@ public class frmClient extends javax.swing.JFrame {
                 // lay duong dan file
                 String dir = File.getCurrentDirectory().toString();
                 //lay duong dan den tap tin
-                String fileName = dir+"\\"+filename;
+                String fileName = dir + "\\" + filename;
 
                 br = new BufferedReader(new FileReader(fileName));
                 StringBuffer sb = new StringBuffer();
-                JOptionPane.showMessageDialog(null,"Đã mở file thành công !!!");
+                JOptionPane.showMessageDialog(null, "Đã mở file thành công !!!");
 
-                char[] ca =new char[5];
-                while(br.ready()){
-                    int len =br.read(ca);
+                char[] ca = new char[5];
+                while (br.ready()) {
+                    int len = br.read(ca);
                     sb.append(ca, 0, len);
                 }
                 br.close();
 
-                System.out.println("Du lieu la :"+""+sb);
+                System.out.println("Du lieu la :" + "" + sb);
                 String chuoi = sb.toString();
 
                 txt_VanBan.setText(chuoi);//hien thi van ban len giao dien 
@@ -394,53 +417,54 @@ public class frmClient extends javax.swing.JFrame {
         //thiet lap hien thi hop thoai chon duong dan
         this.File.setVisible(true);
         //chon hop thoai hien thi len
-        if(this.File.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){   
-            try{
+        if (this.File.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            try {
                 //lay ten file
                 String filename = File.getSelectedFile().getName();
                 // lay duong dan file
                 String dir = File.getCurrentDirectory().toString();
                 //lay duong dan den tap tin
-                String fileName = dir+"\\"+filename;
+                String fileName = dir + "\\" + filename;
                 //khoi tao doi tuong BufferedWriter
                 BufferedWriter bw = null;
                 String s;
                 //tao vong lap lay tung item trong danh sach
-                
+
                 s = listView.getModel().toString();
                 bw = new BufferedWriter(new FileWriter(fileName));
                 bw.write(s);
                 bw.close();
-                JOptionPane.showMessageDialog(null,"Ghi File thành công !!!");
+                JOptionPane.showMessageDialog(null, "Ghi File thành công !!!");
 
-                }
-                catch(IOException ex){
-                    //Logger.getLogger(Ceasar.class.getName()).log(Level.SEVERE,null,ex);
-                }
+            } catch (IOException ex) {
+                //Logger.getLogger(Ceasar.class.getName()).log(Level.SEVERE,null,ex);
+            }
         }
     }//GEN-LAST:event_btn_GhiFileActionPerformed
 
     private void btn_DemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_DemActionPerformed
         String kytu = this.txt_Kytu.getText().trim();
-        //kieu tra xem du lieu tra ve co rong khong
-        try {
-            if (Mahoa() != null) {
-                DefaultListModel dmModel = new DefaultListModel();//khoi tao danh sach
-                String data ="3"+"@"+key+"@"+kytu+"@"+ Mahoa();//gui du lieu len server gom co, khoa, noi dung 
-                SendData(data);//gui ban ma len server
+        if (Check(kytu)) {
+            //kieu tra xem du lieu tra ve co rong khong
+            try {
+                if (Mahoa() != null) {
+                    DefaultListModel dmModel = new DefaultListModel();//khoi tao danh sach
+                    String data = "3" + "@" + key + "@" + kytu + "@" + Mahoa();//gui du lieu len server gom co, khoa, noi dung 
+                    SendData(data);//gui ban ma len server
 
-                //nhan du lieu gui ve tu serevr
-                DatagramPacket packet = ReceviceData(); //nhan khoa tu Client truyen len
-                String chuoi = new String(packet.getData()).trim();//lay du lieu cua may Client
-                System.out.println("Chuỗi nhân về từ Server: " + chuoi);
-                String thongtin = "Số lần xuất hiện của "+kytu+" là: "+chuoi;
-                
-                dmModel.addElement(thongtin);//them du lieu vao danh sach
-                
-                this.listView.setModel(dmModel);//hien thi danh sach len giao dien
-                System.out.println("Van ban sau khi giai ma: " + chuoi);
+                    //nhan du lieu gui ve tu serevr
+                    DatagramPacket packet = ReceviceData(); //nhan khoa tu Client truyen len
+                    String chuoi = new String(packet.getData()).trim();//lay du lieu cua may Client
+                    System.out.println("Chuỗi nhân về từ Server: " + chuoi);
+                    String thongtin = "Số lần xuất hiện của " + kytu + " là: " + chuoi;
+
+                    dmModel.addElement(thongtin);//them du lieu vao danh sach
+
+                    this.listView.setModel(dmModel);//hien thi danh sach len giao dien
+                    System.out.println("Van ban sau khi giai ma: " + chuoi);
                 }
-        } catch (IOException e) {
+            } catch (IOException e) {
+            }
         }
     }//GEN-LAST:event_btn_DemActionPerformed
 
